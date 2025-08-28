@@ -4,9 +4,22 @@
   "description": "",
   "main": "index.js",
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "dev": "vite"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.12.3"
+  "packageManager": "pnpm@10.12.3",
+  "dependencies": {
+    "@y/websocket-server": "^0.1.1",
+    "quill": "^2.0.3",
+    "quill-cursors": "^4.0.4",
+    "y-quill": "^1.0.0",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.27"
+  },
+  "devDependencies": {
+    "vite": "^7.1.3"
+  }
 }
