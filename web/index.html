@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>web大杂烩</title>
+    <link rel="stylesheet" href="./styles/base.css"></link>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <div id="app">
+      <section>
+        <!-- 标题 -->
+        <h1>web大杂烩</h1>
+        <!-- 内容 -->
+        <div class="web-content p-4">
+          <p>内容</p>
+        </div>
+      </section>
+    </div>
+    <!-- 背景 -->
+    <div class="dot-container">
+      <div class="dot"></div>
+    </div>
+  </body>
+  <script>
+    const dotContainer = document.querySelector(".dot-container");
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < 99; i++) {
+      const dot = document.createElement("div");
+      dot.style.position = "absolute";
+      dot.style.left = Math.random() * 100 + "%";
+      dot.style.top = Math.random() * 100 + "%";
+      dot.style.width = Math.random() * 6 + "px";
+      dot.style.height = Math.random() * 6 + "px";
+      dot.style.borderRadius = "50%";
+      dot.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      dot.style.opacity = Math.random();
+      // 添加动画样式
+      dot.style.animation = `twinkle ${
+        Math.random() * 2 + 1
+      }s infinite alternate`;
+      fragment.appendChild(dot);
+    }
+    dotContainer.appendChild(fragment);
+  </script>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中英语AI刷题工具</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.5s;
+        }
+        .fade-enter, .fade-leave-to {
+            opacity: 0;
+        }
+        .slide-down-enter-active, .slide-down-leave-active {
+            transition: all 0.3s ease;
+            max-height: 500px;
+            overflow: hidden;
+        }
+        .slide-down-enter, .slide-down-leave-to {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .option-selected {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-800 mb-2">
+                <i class="fas fa-robot text-blue-600 mr-2"></i>高中英语AI刷题工具
+            </h1>
+            <p class="text-blue-600">智能练习，高效提升英语能力</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300">
+            <!-- 题目卡片 -->
+            <div id="question-card" class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        题目 <span id="question-number">1</span>/3
+                    </span>
+                    <span id="question-type" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        语法-时态
+                    </span>
+                </div>
+
+                <div id="question-container">
+                    <!-- 题目内容将通过JS动态加载 -->
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3" id="options-container">
+                    <!-- 选项将通过JS动态加载 -->
+                </div>
+
+                <div class="mt-6 flex justify-between">
+                    <button id="submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-paper-plane mr-2"></i>提交答案
+                    </button>
+                    <button id="next-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg transition-all hidden">
+                        <i class="fas fa-arrow-right mr-2"></i>下一题
+                    </button>
+                </div>
+            </div>
+
+            <!-- 解析区域 -->
+            <div id="explanation-container" class="slide-down-enter-active bg-blue-50 border-t border-blue-100 overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>题目解析
+                    </h3>
+                    <div id="explanation-content" class="text-gray-700">
+                        <!-- 解析内容将通过JS动态加载 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-12 text-center text-gray-500 text-sm py-4">
+        <p>created by <a href="https://space.coze.cn" class="text-blue-600 hover:underline">coze space</a></p>
+        <p>页面内容均由 AI 生成，仅供参考</p>
+    </footer>
+
+    <script>
+        // 题目数据
+        const questions = [
+            {
+                id: 1,
+                type: "语法-时态",
+                content: "She ______ in this school for three years before she moved to Beijing.",
+                options: [
+                    { id: "A", text: "has taught" },
+                    { id: "B", text: "had taught" },
+                    { id: "C", text: "taught" },
+                    { id: "D", text: "was teaching" }
+                ],
+                correctAnswer: "B",
+                explanation: "本题考查过去完成时。句中有明显的时间状语\"for three years before she moved to Beijing\"，表示在过去某个动作（moved）之前已经完成的动作，应用过去完成时，故选B。"
+            },
+            {
+                id: 2,
+                type: "词汇-词义辨析",
+                content: "The government has taken measures to ______ the spread of the disease.",
+                options: [
+                    { id: "A", text: "prevent" },
+                    { id: "B", text: "protect" },
+                    { id: "C", text: "preserve" },
+                    { id: "D", text: "prepare" }
+                ],
+                correctAnswer: "A",
+                explanation: "本题考查动词词义辨析。prevent意为\"阻止\"，protect意为\"保护\"，preserve意为\"保存\"，prepare意为\"准备\"。根据句意\"政府已经采取措施阻止疾病传播\"，故选A。prevent sth. from happening是固定搭配。"
+            },
+            {
+                id: 3,
+                type: "情景交际",
+                content: "— Would you mind my opening the window?<br>— ______ It's a bit cold today.",
+                options: [
+                    { id: "A", text: "Never mind." },
+                    { id: "B", text: "Yes, please." },
+                    { id: "C", text: "Of course not." },
+                    { id: "D", text: "You'd better not." }
+                ],
+                correctAnswer: "D",
+                explanation: "本题考查情景交际。问句\"Would you mind...\"表示询问对方是否介意做某事。根据答语\"It's a bit cold today.\"（今天有点冷）可知，回答者介意开窗，因此应选择D项\"You'd better not.\"（你最好不要）。A项\"Never mind.\"（没关系）通常用于回答道歉；B项\"Yes, please.\"（是的，请）前后矛盾；C项\"Of course not.\"（当然不介意）与后文意思不符。"
+            }
+        ];
+
+        // 当前题目索引
+        let currentQuestionIndex = 0;
+        let selectedOption = null;
+        let isSubmitted = false;
+
+        // DOM元素
+        const questionContainer = document.getElementById('question-container');
+        const optionsContainer = document.getElementById('options-container');
+        const explanationContent = document.getElementById('explanation-content');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const questionNumber = document.getElementById('question-number');
+        const questionType = document.getElementById('question-type');
+        const explanationContainer = document.getElementById('explanation-container');
+
+        // 初始化加载第一题
+        loadQuestion(currentQuestionIndex);
+
+        // 加载题目
+        function loadQuestion(index) {
+            const question = questions[index];
+            
+            // 重置状态
+            selectedOption = null;
+            isSubmitted = false;
+            explanationContainer.classList.remove('slide-down-enter-active');
+            explanationContainer.style.maxHeight = '0';
+            nextBtn.classList.add('hidden');
+            submitBtn.disabled = true;
+            
+            // 更新题目信息
+            questionNumber.textContent = index + 1;
+            questionType.textContent = question.type;
+            
+            // 设置题目内容
+            questionContainer.innerHTML = `<p class="text-lg text-gray-800 leading-relaxed">${question.content}</p>`;
+            
+            // 设置选项
+            optionsContainer.innerHTML = '';
+            question.options.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'bg-white border border-gray-200 rounded-lg p-4 cursor-pointer transition-all hover:bg-blue-50 hover:border-blue-200';
+                optionElement.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-medium mr-3">${option.id}</div>
+                        <div class="text-gray-700">${option.text}</div>
+                    </div>
+                `;
+                optionElement.dataset.optionId = option.id;
+                
+                // 点击选项
+                optionElement.addEventListener('click', () => {
+                    if (isSubmitted) return;
+                    
+                    // 移除之前选中的样式
+                    document.querySelectorAll('.option-selected').forEach(el => {
+                        el.classList.remove('option-selected');
+                    });
+                    
+                    // 添加选中样式
+                    optionElement.classList.add('option-selected');
+                    selectedOption = option.id;
+                    submitBtn.disabled = false;
+                });
+                
+                optionsContainer.appendChild(optionElement);
+            });
+        }
+
+        // 提交答案
+        submitBtn.addEventListener('click', () => {
+            if (isSubmitted || !selectedOption) return;
+            
+            isSubmitted = true;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            // 显示解析
+            explanationContent.innerHTML = `
+                <p class="mb-4">正确答案: <span class="font-bold text-green-600">${currentQuestion.correctAnswer}</span></p>
+                <p>${currentQuestion.explanation}</p>
+            `;
+            
+            // 显示解析区域
+            explanationContainer.classList.add('slide-down-enter-active');
+            explanationContainer.style.maxHeight = '500px';
+            
+            // 标记正确和错误选项
+            document.querySelectorAll('[data-option-id]').forEach(optionEl => {
+                const optionId = optionEl.dataset.optionId;
+                if (optionId === currentQuestion.correctAnswer) {
+                    optionEl.classList.add('bg-green-50', 'border-green-200');
+                } else if (optionId === selectedOption && selectedOption !== currentQuestion.correctAnswer) {
+                    optionEl.classList.add('bg-red-50', 'border-red-200');
+                }
+            });
+            
+            // 显示下一题按钮
+            if (currentQuestionIndex < questions.length - 1) {
+                nextBtn.classList.remove('hidden');
+            }
+        });
+
+        // 下一题
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion(currentQuestionIndex);
+            }
+        });
+    </script>
+</body>
+</html>

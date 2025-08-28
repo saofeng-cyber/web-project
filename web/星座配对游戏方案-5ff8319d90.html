@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星座配对趣味游戏</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .constellation-icon {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4338ca 0%, #7c3aed 50%, #db2777 100%);
+            color: #fbbf24;
+            margin-right: 8px;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0.1) 0%, 
+                rgba(255,255,255,0.3) 50%, 
+                rgba(255,255,255,0.1) 100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        .highlight {
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.2) 0%, transparent 100%);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+        
+        .select-wrapper {
+            position: relative;
+        }
+        
+        .select-wrapper::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #818cf8;
+            pointer-events: none;
+        }
+        
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.5s;
+        }
+        .fade-enter, .fade-leave-to {
+            opacity: 0;
+        }
+        
+        .star-burst {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+        }
+        
+        .animate-star-burst {
+            animation: starBurst 1s ease-out;
+        }
+        
+        @keyframes starBurst {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- 星空背景 -->
+    <div id="stars-container" class="fixed inset-0 -z-10"></div>
+    
+    <!-- 星光闪烁效果 -->
+    <div id="star-burst" class="star-burst"></div>
+    
+    <header class="py-8 px-4 text-center">
+        <h1 class="text-4xl font-bold mb-2 gradient-text">星座配对趣味游戏</h1>
+        <p class="text-indigo-300">探索你与TA的星座缘分</p>
+    </header>
+    
+    <main class="flex-1 px-4 pb-12">
+        <!-- 选择星座部分 -->
+        <div id="selection-section" class="max-w-md mx-auto glass-card p-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-center text-indigo-100">选择你们的星座</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label for="constellation1" class="block text-sm font-medium text-indigo-200 mb-2">你的星座</label>
+                        <div class="select-wrapper">
+                            <select id="constellation1" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-3 px-4 text-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">请选择星座</option>
+                                <option value="白羊座">白羊座 (3.21-4.19)</option>
+                                <option value="金牛座">金牛座 (4.20-5.20)</option>
+                                <option value="双子座">双子座 (5.21-6.20)</option>
+                                <option value="巨蟹座">巨蟹座 (6.22-7.22)</option>
+                                <option value="狮子座">狮子座 (7.23-8.22)</option>
+                                <option value="处女座">处女座 (8.23-9.22)</option>
+                                <option value="天秤座">天秤座 (9.23-10.23)</option>
+                                <option value="天蝎座">天蝎座 (10.24-11.22)</option>
+                                <option value="射手座">射手座 (11.23-12.21)</option>
+                                <option value="摩羯座">摩羯座 (12.22-1.19)</option>
+                                <option value="水瓶座">水瓶座 (1.20-2.18)</option>
+                                <option value="双鱼座">双鱼座 (2.19-3.20)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="constellation2" class="block text-sm font-medium text-indigo-200 mb-2">TA的星座</label>
+                        <div class="select-wrapper">
+                            <select id="constellation2" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-3 px-4 text-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">请选择星座</option>
+                                <option value="白羊座">白羊座 (3.21-4.19)</option>
+                                <option value="金牛座">金牛座 (4.20-5.20)</option>
+                                <option value="双子座">双子座 (5.21-6.20)</option>
+                                <option value="巨蟹座">巨蟹座 (6.22-7.22)</option>
+                                <option value="狮子座">狮子座 (7.23-8.22)</option>
+                                <option value="处女座">处女座 (8.23-9.22)</option>
+                                <option value="天秤座">天秤座 (9.23-10.23)</option>
+                                <option value="天蝎座">天蝎座 (10.24-11.22)</option>
+                                <option value="射手座">射手座 (11.23-12.21)</option>
+                                <option value="摩羯座">摩羯座 (12.22-1.19)</option>
+                                <option value="水瓶座">水瓶座 (1.20-2.18)</option>
+                                <option value="双鱼座">双鱼座 (2.19-3.20)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="match-btn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+                立即配对
+            </button>
+        </div>
+        
+        <!-- 结果展示部分 -->
+        <div id="result-section" class="max-w-md mx-auto glass-card p-8 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="result-title" class="text-2xl font-bold text-indigo-100"></h2>
+                <button id="back-btn" class="text-indigo-400 hover:text-indigo-300 flex items-center">
+                    <i class="fas fa-redo mr-1"></i> 换个组合
+                </button>
+            </div>
+            
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-indigo-200">配对指数</span>
+                    <span id="match-score" class="text-xl font-bold gradient-text"></span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="h-full rounded-lg" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-indigo-900/50 rounded-lg p-4">
+                    <div class="text-xs text-indigo-300 mb-1">最佳配对</div>
+                    <div id="best-match" class="font-bold text-indigo-100"></div>
+                </div>
+                <div class="bg-indigo-900/50 rounded-lg p-4">
+                    <div class="text-xs text-indigo-300 mb-1">最差配对</div>
+                    <div id="worst-match" class="font-bold text-indigo-100"></div>
+                </div>
+            </div>
+            
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-indigo-100 mb-3">星座解析</h3>
+                <div id="match-analysis" class="text-indigo-200 space-y-3"></div>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-indigo-100 mb-3">配对核心逻辑</h3>
+                <div class="text-indigo-200 space-y-3">
+                    <p><span class="highlight">元素共鸣</span>：火象（白羊/狮子/射手）与风象（双子/天秤/水瓶）思维同频；土象（金牛/处女/摩羯）与水象（巨蟹/天蝎/双鱼）情感互补。</p>
+                    <p><span class="highlight">现代恋爱观</span>：强调「独立空间」（如水瓶与双子的无束缚关系）、「动态成长」（如处女与摩羯的共同目标绑定）。</p>
+                    <p><span class="highlight">冲突预警</span>：固定宫（天蝎/金牛/狮子/水瓶）与变动宫（双鱼/双子/处女/射手）易因「规则 vs 自由」产生矛盾。</p>
+                </div>
+            </div>
+            
+            <button id="share-btn" class="w-full bg-gradient-to-r from-amber-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+                <i class="fas fa-share-alt mr-2"></i> 分享到朋友圈
+            </button>
+        </div>
+    </main>
+    
+    <footer class="py-4 text-center text-sm text-indigo-400">
+        <p>created by <a href="https://space.coze.cn" class="hover:text-indigo-300 underline">coze space</a></p>
+        <p>页面内容均由 AI 生成，仅供参考</p>
+    </footer>
+    
+    <script>
+        // 星座配对数据
+        const constellationData = {
+            "白羊座": {
+                best: "狮子座（热情共振）、射手座（冒险伙伴）",
+                worst: "巨蟹座（敏感冲突）、摩羯座（节奏不合）",
+                analysis: "同为火象星座，共享行动力与乐观特质。狮子的自信与白羊的冲动形成正向激励，射手的自由精神延续彼此的探索欲。巨蟹的情感依赖让白羊感到束缚，摩羯的保守与白羊的冒险精神产生根本分歧。"
+            },
+            "金牛座": {
+                best: "处女座（务实同盟）、摩羯座（稳定共振）",
+                worst: "水瓶座（价值观冲突）、狮子座（控制欲对抗）",
+                analysis: "土象星座的默契让两人在物质规划与责任感上高度契合，处女的细节控与金牛的稳健形成高效协作。水瓶的多变挑战金牛的稳定性，狮子的主导欲引发权力斗争。"
+            },
+            "双子座": {
+                best: "水瓶座（灵魂共振）、天秤座（社交默契）",
+                worst: "处女座（挑剔对立）、双鱼座（情感不同步）",
+                analysis: "风象星座的思维同频，水瓶的创新与双子的机智碰撞出灵感，天秤的平衡感中和双子的浮躁。处女的完美主义让双子感到压抑，双鱼的感性与双子的理性形成沟通障碍。"
+            },
+            "巨蟹座": {
+                best: "天蝎座（深度共鸣）、双鱼座（情感共生）",
+                worst: "白羊座（冲动伤害）、水瓶座（理性疏离）",
+                analysis: "水象星座的情感深度匹配，天蝎的占有欲满足巨蟹的安全感需求，双鱼的温柔包容巨蟹的敏感。白羊的直率刺伤巨蟹的细腻，水瓶的独立让巨蟹感到情感被忽视。"
+            },
+            "狮子座": {
+                best: "白羊座（激情互补）、射手座（玩伴同盟）",
+                worst: "天蝎座（权力斗争）、金牛座（stubborn对抗）",
+                analysis: "火象星座的能量共振，白羊的行动力配合狮子的领导力，射手的乐观化解狮子的 ego 危机。天蝎的掌控欲挑战狮子的主导权，金牛的固执引发长期冷战。"
+            },
+            "处女座": {
+                best: "金牛座（务实协作）、摩羯座（目标一致）",
+                worst: "双子座（随性冲突）、射手座（粗心挑战）",
+                analysis: "土象星座的效率组合，金牛的稳健承接处女的规划，摩羯的野心激励处女突破完美主义陷阱。双子的多变打乱处女的秩序感，射手的不拘小节频繁触碰处女底线。"
+            },
+            "天秤座": {
+                best: "双子座（沟通无间）、水瓶座（理性共鸣）",
+                worst: "巨蟹座（情绪化压力）、摩羯座（现实冲突）",
+                analysis: "风象星座的社交优势，双子的机智填补天秤的犹豫，水瓶的创新拓展天秤的视野。巨蟹的敏感让天秤感到疲惫，摩羯的功利主义与天秤的理想主义对立。"
+            },
+            "天蝎座": {
+                best: "巨蟹座（情感安全）、双鱼座（灵魂共生）",
+                worst: "双子座（信任危机）、狮子座（ego碰撞）",
+                analysis: "水象星座的深度绑定，巨蟹的温柔化解天蝎的猜忌，双鱼的共情能力满足天蝎的占有欲。双子的多变引发天蝎的控制欲，狮子的高调挑战天蝎的神秘感。"
+            },
+            "射手座": {
+                best: "白羊座（冒险伙伴）、狮子座（乐观共振）",
+                worst: "金牛座（节奏冲突）、摩羯座（保守限制）",
+                analysis: "火象星座的自由组合，白羊的冲动点燃射手的热情，狮子的自信强化射手的探索欲。金牛的稳健让射手感到束缚，摩羯的规则感压制射手的随性。"
+            },
+            "摩羯座": {
+                best: "金牛座（物质同盟）、处女座（细节互补）",
+                worst: "双子座（不可靠感）、射手座（责任逃避）",
+                analysis: "土象星座的长期主义，金牛的理财能力配合摩羯的事业野心，处女的完美主义提升执行细节。双子的善变让摩羯缺乏安全感，射手的自由精神与摩羯的责任感背道而驰。"
+            },
+            "水瓶座": {
+                best: "双子座（思维共振）、天秤座（社交默契）",
+                worst: "巨蟹座（情感绑架）、天蝎座（控制欲窒息）",
+                analysis: "风象星座的创新联盟，双子的敏捷思维与水瓶的前瞻性碰撞，天秤的平衡感调和水瓶的叛逆。巨蟹的依赖让水瓶感到压抑，天蝎的占有欲挑战水瓶的独立底线。"
+            },
+            "双鱼座": {
+                best: "天蝎座（深度占有）、巨蟹座（温柔港湾）",
+                worst: "双子座（理性碾压）、射手座（现实脱节）",
+                analysis: "水象星座的情感闭环，天蝎的专注给双鱼安全感，巨蟹的体贴满足双鱼的浪漫幻想。双子的逻辑思维否定双鱼的感性，射手的务实击碎双鱼的梦幻滤镜。"
+            }
+        };
+        
+        // 星座配对分数计算
+        function calculateMatchScore(cons1, cons2) {
+            // 简单计算配对分数，实际应用中可以根据更复杂的逻辑
+            const elementGroups = {
+                fire: ["白羊座", "狮子座", "射手座"],
+                earth: ["金牛座", "处女座", "摩羯座"],
+                air: ["双子座", "天秤座", "水瓶座"],
+                water: ["巨蟹座", "天蝎座", "双鱼座"]
+            };
+            
+            // 同元素配对分数高
+            for (const [group, constellations] of Object.entries(elementGroups)) {
+                if (constellations.includes(cons1) && constellations.includes(cons2)) {
+                    return Math.floor(Math.random() * 20) + 80; // 80-100
+                }
+            }
+            
+            // 火+风，土+水配对分数中等
+            if ((elementGroups.fire.includes(cons1) && elementGroups.air.includes(cons2)) || 
+                (elementGroups.air.includes(cons1) && elementGroups.fire.includes(cons2))) {
+                return Math.floor(Math.random() * 20) + 70; // 70-90
+            }
+            
+            if ((elementGroups.earth.includes(cons1) && elementGroups.water.includes(cons2)) || 
+                (elementGroups.water.includes(cons1) && elementGroups.earth.includes(cons2))) {
+                return Math.floor(Math.random() * 20) + 70; // 70-90
+            }
+            
+            // 其他组合分数较低
+            return Math.floor(Math.random() * 30) + 50; // 50-80
+        }
+        
+        // 创建星空背景
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            const starCount = 100;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机大小
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // 随机位置
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // 随机闪烁延迟
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                
+                container.appendChild(star);
+            }
+        }
+        
+        // 显示星光闪烁效果
+        function showStarBurst() {
+            const starBurst = document.getElementById('star-burst');
+            starBurst.classList.add('animate-star-burst');
+            
+            setTimeout(() => {
+                starBurst.classList.remove('animate-star-burst');
+            }, 1000);
+        }
+        
+        // DOM加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            // 配对按钮点击事件
+            document.getElementById('match-btn').addEventListener('click', function() {
+                const cons1 = document.getElementById('constellation1').value;
+                const cons2 = document.getElementById('constellation2').value;
+                
+                if (!cons1 || !cons2) {
+                    alert('请选择两个星座进行配对');
+                    return;
+                }
+                
+                // 显示星光闪烁效果
+                showStarBurst();
+                
+                // 延迟显示结果，让动画完成
+                setTimeout(() => {
+                    // 隐藏选择部分，显示结果部分
+                    document.getElementById('selection-section').classList.add('hidden');
+                    document.getElementById('result-section').classList.remove('hidden');
+                    
+                    // 设置结果内容
+                    document.getElementById('result-title').textContent = `${cons1} ♡ ${cons2}`;
+                    
+                    // 计算并显示配对分数
+                    const score = calculateMatchScore(cons1, cons2);
+                    document.getElementById('match-score').textContent = `${score}%`;
+                    
+                    // 动画显示进度条
+                    const progressFill = document.getElementById('progress-fill');
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = `${score}%`;
+                    }, 100);
+                    
+                    // 显示最佳和最差配对
+                    document.getElementById('best-match').textContent = constellationData[cons1].best;
+                    document.getElementById('worst-match').textContent = constellationData[cons1].worst;
+                    
+                    // 显示分析内容
+                    const analysis = constellationData[cons1].analysis;
+                    document.getElementById('match-analysis').innerHTML = `
+                        <p>${analysis}</p>
+                    `;
+                }, 500);
+            });
+            
+            // 返回按钮点击事件
+            document.getElementById('back-btn').addEventListener('click', function() {
+                document.getElementById('selection-section').classList.remove('hidden');
+                document.getElementById('result-section').classList.add('hidden');
+            });
+            
+            // 分享按钮点击事件
+            document.getElementById('share-btn').addEventListener('click', function() {
+                alert('已复制分享链接到剪贴板，快去分享给你的朋友吧！');
+            });
+        });
+    </script>
+</body>
+</html>
