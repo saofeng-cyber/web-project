@@ -10,6 +10,29 @@
       <button id="btn">测试</button>
       <div id="editor"></div>
     </div>
-    <script type="module" src="./main.ts"></script>
+    <script>
+      const dotContainer = document.createElement("div");
+      dotContainer.className = "dot-container";
+      document.body.appendChild(dotContainer);
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < 99; i++) {
+        const dot = document.createElement("div");
+        dot.style.position = "absolute";
+        dot.style.left = Math.random() * 100 + "%";
+        dot.style.top = Math.random() * 100 + "%";
+        dot.style.width = Math.random() * 6 + "px";
+        dot.style.height = Math.random() * 6 + "px";
+        dot.style.borderRadius = "50%";
+        dot.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        dot.style.opacity = Math.random();
+        // 添加动画样式
+        dot.style.animation = `twinkle ${
+          Math.random() * 2 + 1
+        }s infinite alternate`;
+        fragment.appendChild(dot);
+      }
+      dotContainer.appendChild(fragment);
+    </script>
+    <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

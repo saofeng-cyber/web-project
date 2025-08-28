@@ -1,9 +1,8 @@
-import "./styles/main.css";
 import Quill from "quill";
 import { QuillBinding } from "y-quill";
 import "quill/dist/quill.snow.css";
 import * as Y from "yjs";
-
+import { WebsocketProvider } from "y-websocket";
 import QuillCursors from "quill-cursors";
 
 const toolbarOptions = [
@@ -28,7 +27,7 @@ const toolbarOptions = [
 ];
 
 Quill.register("modules/cursors", QuillCursors);
-import { WebsocketProvider } from "y-websocket";
+
 const quill = new Quill("#editor", {
   modules: {
     cursors: true,
